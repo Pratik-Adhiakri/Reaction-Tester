@@ -112,11 +112,31 @@
             <div class="form-group mt-3">
                 <label for="selectTheme">App Theme</label>
                 <select id="selectTheme" class="input-text" style="width: 100%; max-width: none; cursor: pointer;">
-                    
+                    <option value="dark">Dark Mode</option>
+                    <option value="light">Light Mode</option>
+                    <option value="neon">Neon Gamer Core Theme</option>
                 </select>
+            </div>
+            <div class="form-group mt-3">
+                <label>
+                    <input type="checkbox" checked style="margin-right: 8px;" id="checkAudio">
+                    Enable Audio
+                </label>
+                <p class="text-muted mt-1" style="font-size: 0.8rem;">Plays a high pitch sine wave using web audio api on green screen :D</p>
+            </div>
+            <div class="form-group mt-3">
+                <label>
+                    <input type="checkbox" id="checkAdvanceStats" checked style="margin-right: 8px;">
+                    Show Advance Stats
+                </label>
+            </div>
+            <div class="mt-4 flex-grow" style="justify-content: space-between;">
+                <button class="btn btn-outline" id="btnWipeData" style="color: var(--danger); border-color: var(--danger);">Wipe All Data</button>
+                <button class="btn" id="btnSaveSettings">Save Changes</button>
             </div>
         </div>
     </div>
+    
     <script src="script.js"></script>
 </body>
 </html>
