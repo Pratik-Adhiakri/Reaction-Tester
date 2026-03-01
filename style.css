@@ -1,0 +1,41 @@
+/*less do this and less hope this wont be headache like html*/
+:root{
+    --bg: #1a1a1a;
+    --text: #f0f0f0;
+    --primary: #3b82f6;
+    --primary-hover: #2563eb;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warning: #eab308;
+    --panel:#2a2a2a;
+    --border: #404040;
+    --chart: #333333;
+    --font: 'Segoe UI', Roboto,Helvetica, Arial, sans-serif;
+    --font-mono: 'Courier New', Courier,monospace;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg:16px;
+    --spacing-xs:4px;
+    --spacing-sm:8px;
+    --spacing-md:16px;
+    --spacing-lg:24px;
+    --spacing-xl:32px;
+}
+/*lmao i hope i use evrything*/
+[data-theme="light"]{
+    --bg: #f8fafc;
+    --text: #0f172a;
+    --panel:#ffffff;
+    --border: #e2e8f0;
+    --chart: #cbd5e1;
+}
+[data-theme="neon"]{
+    --bg: #050505;
+    --text: #00ffcc;
+    --primary: #ff00ff;
+    --primary-hover: #cc00cc;
+    --panel: #111;
+    --border: #00ffcc;
+    --chart: #222;
+}
+/*declaring variable has also become an headache*/
