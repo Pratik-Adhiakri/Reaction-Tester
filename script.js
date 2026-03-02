@@ -304,3 +304,130 @@ const ChartEngine={
         }
     }
 };
+const AntiCheat={
+    clickHistory:[],
+    verifyClick:function(reactionTime){
+        if(reactionTime<CONFIG.CHEAT_THRESHOLD_MS){
+            console.warn(`[Anti Cheat] Triggered! Sus FAST time (${reactionTime}ms)`);
+            return {valid:false,reason:'SUPERHUMAN'};
+        }
+        this.clickHistory.push(reactionTime);
+        if(this.clickHistory.length>5){
+            this.clickHistory.shift();
+            const std = Utils.math.stdDev(this.clickHistory);
+            if(std<2&&AppState.user.history.length>10){
+                console.warn(`[Anti Cheat] Triggered Sus consistent (${std} stddev)`);
+                return{valid:false,reason:'RBOTIC'};
+            }
+        }
+        return{
+            valid:true
+        }
+    }
+};
+const ArenaLogic={
+    el:null,
+    titleEl:null,
+    subEl:null,
+    iconEl:null,
+    init:function(){
+        this.el = Utils.$('#theArena');
+        this.titleEl =Utils.$('#arenaTitle');
+        this.subEl = Utils.$('#arenaSubtitle');
+        this.iconEl =Utils.$('#arenaIcon');
+        this.handleInput =this.handleInput.bind(this);
+        this.el.addEventListener('mousedown',this.handleInput);
+        this.el.addEventListener('touchstart',(e)=>{
+            e.preventDefault();
+            this.handleInput();
+        },{
+            passive:false
+        });
+    },
+    handleKeyDown:function(e){
+        if(e.code==='Space'&&AppState.arena.state!=='IDLE'){
+            e.preventDefault();
+            ArenaLogic.handleInput(e);
+        }
+    },
+    changeState:function(newState,params={}){
+        AppState.arena.state=newState;
+        this.el.className ='arena-container';
+        //now switch case ahhhh my head's gonna blow
+        switch(newState){
+            case 'IDLE':
+                this.el.classList.add('state-idle');
+               this.iconEl.innerHTML = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path></svg>`;
+               this.titleEl.textContent ='Click to start';
+               this.subEl.textContent ='Wait for greennn..';
+               break;
+            case 'WAITING':
+                this.el.classList.add('state-waiting');
+                this.iconEl.innerHTML= `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+                this.titleEl.textContent ='Wait....';
+                this.subEl.textContent ='be patient';
+                break;
+            case 'ACTIVE':
+                this.el.classList.add('state-active');
+                this.iconEl.innerHTML = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+                this.titleEl.textContent ='Click!';
+                this.subEl.textContent ='Now Now Now Comon!';
+                break;
+            case 'RESULT':
+                this.el.classList.add('state-result');
+                this.iconEl.innerHTML = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+                this.titleEl.textContent = `${params.ms} ms`;
+                this.subEl.textContent = `Click to try again...`;
+                break;
+            case 'PENALTY':
+                this.el.classList.add('state-penalty');
+                this.iconEl.innerHTML = `<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+                this.titleEl.textContent =`Too early`;
+                this.subEl.textContent = `HAHAHA penalty added to the stats`;
+                break;
+        }
+    },
+    //man grinding ts is tuff
+    startTest: function(){
+        AudioEngine.init();
+        this.changeState('WAITING');
+        const delay = Math.floor(Math.random()*(CONFIG.MAX_WAIT-CONFIG.MIN_WAIT))+CONFIG.MIN_WAIT;
+        const targetTimeStamp =performance.now()+delay;
+        AppState.arena.targetTime =targetTimeStamp;
+        const checkTime =(now)=>{
+            if(AppState.arena.state !== 'WAITING') return;
+            if(now>=targetTimeStamp){
+                this.triggerActive();
+            }else{
+                AppState.arena.rafId = requestAnimationFrame(checkTime);
+            }
+        };
+        AppState.arena.rafId =requestAnimationFrame(checkTime);
+    },
+    triggerActive:function(){
+        this.changeState('ACTIVE');
+        AppState.arena.startTime = performance.now();
+        AudioEngine.playTone(CONFIG.SOUND_FQS.GO,'square',0.1);
+    },
+    handleInput:function(e){
+        const now = performance.now();
+        switch(AppState.arena.state){
+            case 'IDLE':
+            case 'RESULT':
+            case 'PENALTY':
+                this.startTest();
+                break;
+            case 'WAITING':
+                cancelAnimationFrame(AppState.arena.rafId);
+                AudioEngine.playTone(CONFIG.SOUND_FQS.FAIL,'sawtooth',0.3);
+                this.changeState('PENALTY');
+                this.recordScore(CONFIG.CHEAT_THRESHOLD_MS,true);
+                break;
+            case 'ACTIVE':
+                const reactionTime =now -AppState.arena.startTime;
+                this.completeTest(reactionTime);
+                break;
+        }
+    },
+    com
+}
