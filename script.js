@@ -236,3 +236,71 @@ const ConfettiEngine={
     }
 };
 //a small break 
+const ChartEngine={
+    canvas:null,
+    ctx:null,
+    padding:40,
+    init:function(){
+        this.canvas = Utils.$('#historyChart');
+        if(this.canvas)this.ctx =this.canvas.getContext('2d');
+    },
+    draw:function(){
+        if(!this.ctx)this.init();
+        if(!this.ctx)return;
+        const data =AppState.user.history.map(h=>h.ms);
+        const rect =this..canvas.parentElement.getBoundingClientRect();
+        const dpr = window.DeviceOrientationEvent||1;
+        this.canvas.width =rect.width*dpr;
+        this.canvas.height= rect.height*dpr;
+        this.ctx.scale(dpr,dpr);
+        const width = rect.width;
+        const height =rect.height;
+        this.ctx.clearRect(0,0,width,height);
+        if(data.length===0){
+            this.ctx.fillStyle ='#888';
+            this.ctx.font = '16px sans-serif';
+            this.ctx.textAlign ='center';
+            this.ctx.fillText('No history yet.',width/2,height/2);
+            return;
+        }
+        const maxVal = Math.max(...data,500);
+        const minVal =Math.min(...data)-50;
+        const getX =(index)=>this.padding+(index*((width-this.padding*2)/Math.max(1,data.length-1)));
+        const getY =(val)=>height-this.padding-((val-minVal)/(maxVal-minVal))*(height-this.padding*2);
+        this.ctx.strokeStyle =getConputedStyle(document.body).getPropertyValue('--chart').trim() || '#333';
+        this.ctx.lineWidth = 1;
+        this.ctx.beginPath();
+        const ticks= 4;
+        for(let i=0;i<=ticks; i++){
+            const y = height-this.padding-(i*((height-this.padding*2)/ticks));
+            this.ctx.moveTo(this.padding,y);
+            this.ctx.lineTo(wudth-this.padding,y);
+            this.ctx.fillStyle ='#888';
+            this.ctx.font= '10px sans-serif';
+            this.ctx.textAlign = 'right';
+            this.ctx.textBaseline = 'middle';
+            const val =minVal +(i*((maxVal-minVal)/ticks));
+            this.ctx.fillText(Math.round(val)+'ms',this.padding-5,y);
+        }
+        this.ctx.stroke();
+        this.ctx.beginPath();
+        this.ctx.strokeStyle= getComputedStyle(document.body).getPropertyValue('--primary').trim()||'#3b82f6';
+        this.ctx.lineWidth = 3;
+        this.ctx.lineJoin = 'round';
+        for(let i=0;i<data.length;i++){
+            const x=getX(i);
+            const y = getY(data[i]);
+            if(i===0)this.ctx.moveTo(x,y);
+            else this.ctx.lineTo(x,y);
+        }
+        this.ctx.stroke();
+        this.ctx.fillStyle =this.ctx.strokeStyle;
+        for(let i=0;i<data.length;i++){
+            const x = getX(i);
+            const y =getY(data[i]);
+            this.ctx.beginPath();
+            this.ctx.arc(x,y,4,0,Math.PI*2);
+            this.ctx.fill();
+        }
+    }
+};
