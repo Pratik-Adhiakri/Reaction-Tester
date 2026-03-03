@@ -14,7 +14,7 @@
 
 <h3>1. Play online!</h3>
 <p>i. Install any web browsers (if you haven't).</p>
-<p>ii. Click the address bar and go to https//pratik-reactiotimetester.vercel.app</p>
+<p>ii. Click the address bar and go to https://pratik-reactiontimetester.netlify.app/</p>
 <p>iii. ENJOY!!</p>
 
 <h3>2. Play Offline!</h3>
