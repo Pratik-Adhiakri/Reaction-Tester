@@ -429,5 +429,42 @@ const ArenaLogic={
                 break;
         }
     },
-    com
+    completeTest:function(rawMs){
+        const ms =parseFloat(rawMs.toFixed(2));
+        const cheatCheck = AntiCheat.verifyClick(ms);
+        if(!cheatCheck.valid){
+            alert(`Ok so bruh why r u cheating? huh? score has been rejected because of ${cheatCheck.reason}. Stop cheating bro you aint tuff`);
+            this.changeState('RESULT',{ms:ms});
+            if(ms<AppState.stats.pb){
+                ConfettiEngine.fire();
+            }
+            this.recordScore(ms,false);
+    }
+},
+recordScore:function(ms,isPenalty){
+    const entry ={
+        ms:ms,
+        date:new Date().toISOString(),
+        penalty:isPenalty
+    };
+    AppState.user.history.push(entry);
+    if(AppState.user.history.length>CONFIG.MAX_HISTORY){
+        AppState.user.history.shift();
+    }
+    if(!isPenalty){
+        AppState.leaderboard =AppState.leaderboard.filter(x=>x.isPlayer===false||x.id!=='player_1');
+        const validHistory =AppState.user.history.filter(x=>!x.penalty).map(x=>x.ms);
+        const best = validHistory.length>0?Math.min(...validHistory):null;
+        if(best){
+            AppState.leaderboard.push({
+                id: 'player_1',
+                user: AppState.user.name,
+                ms:best,
+                date:new Date().toISOString(),
+                isPlayer: true
+            });
+        }
+        
+    }
+}
 }
