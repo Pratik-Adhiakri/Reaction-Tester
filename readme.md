@@ -1,4 +1,4 @@
-<h1>Reaction Testeer</h1>
+<h1>Reaction Tester</h1>
 <p>Reaction Tester is a web application made by using HTML, CSS and JS to make it compatible to run in the web. As the name stands, it is a web app where we can test our reflexes or rection speed and it has many more features that are listed below:</p>
 <p>1. Leaderboard: Reaction Tester has a leaderboar where there are 100 scores locally stored and it makes it more fun as it brings challenges to reach at the top or beat a specific score.</p>
 <p>2. Dashboard: Reaction Tester features a dashboard feature where your performance and scores are stored to make interactive charts, find standard deviation and average of your scores are calculated and visualized interactively. </p>
