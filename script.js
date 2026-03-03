@@ -1,10 +1,11 @@
-const { version } = require("react");
-
 //less goo
 const CONFIG ={
     APP_VERSION: '2.4.1',
     STORAGE_KEY: 'rxn_master_save_v2',
     MIN_WAIT:1500,
+    MAX_WAIT:5000,
+    MAX_HISTORY:200,
+    CHEAT_THRESHOLD_MS:100,
     SOUND_FQS:{
         WAIT:220,
         GO:880,
@@ -68,7 +69,7 @@ const AppState ={
 };
 const Utils ={
     $:(selector)=>{
-        const el= document.querySelector(selector),
+        const el= document.querySelector(selector);
         if(!el)console.warn(`[DOM warning] Selector Missing: ${selector}`);
         return el;
     },
@@ -152,7 +153,7 @@ const AudioEngine ={
             const gainNode =this.ctx.createGain();
             osc.type= type;
             osc.frequency.setValueAtTime(frequency,this.ctx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0,this.ctx.currentTime+0.01);
+            gainNode.gain.setValueAtTime(0,this.ctx.currentTime);
             gainNode.gain.linearRampToValueAtTime(0.5,this.ctx.currentTime+0.01);
             gainNode.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+duration);
             osc.connect(gainNode);
@@ -223,7 +224,7 @@ const ConfettiEngine={
             this.ctx.strokeStyle =p.color;
             this.ctx.globalAlpha = Math.max(0,p.life);
             this.ctx.moveTo(p.x+p.tilt+p.r,p.y);
-            this.ctx.lineTo(p.x,p.tilt,p.y+p.tilt+p.r);
+            this.ctx.lineTo(p.x+p.tilt,p.y+p.tilt+p.r);
             this.ctx.stroke();
         }
         if(activeParticles>0){
@@ -248,8 +249,8 @@ const ChartEngine={
         if(!this.ctx)this.init();
         if(!this.ctx)return;
         const data =AppState.user.history.map(h=>h.ms);
-        const rect =this..canvas.parentElement.getBoundingClientRect();
-        const dpr = window.DeviceOrientationEvent||1;
+        const rect =this.canvas.parentElement.getBoundingClientRect();
+        const dpr = window.devicePixelRatio||1;
         this.canvas.width =rect.width*dpr;
         this.canvas.height= rect.height*dpr;
         this.ctx.scale(dpr,dpr);
@@ -267,14 +268,14 @@ const ChartEngine={
         const minVal =Math.min(...data)-50;
         const getX =(index)=>this.padding+(index*((width-this.padding*2)/Math.max(1,data.length-1)));
         const getY =(val)=>height-this.padding-((val-minVal)/(maxVal-minVal))*(height-this.padding*2);
-        this.ctx.strokeStyle =getConputedStyle(document.body).getPropertyValue('--chart').trim() || '#333';
+        this.ctx.strokeStyle =getComputedStyle(document.body).getPropertyValue('--chart').trim() || '#333';
         this.ctx.lineWidth = 1;
         this.ctx.beginPath();
         const ticks= 4;
         for(let i=0;i<=ticks; i++){
             const y = height-this.padding-(i*((height-this.padding*2)/ticks));
             this.ctx.moveTo(this.padding,y);
-            this.ctx.lineTo(wudth-this.padding,y);
+            this.ctx.lineTo(width-this.padding,y);
             this.ctx.fillStyle ='#888';
             this.ctx.font= '10px sans-serif';
             this.ctx.textAlign = 'right';
@@ -434,13 +435,15 @@ const ArenaLogic={
         const cheatCheck = AntiCheat.verifyClick(ms);
         if(!cheatCheck.valid){
             alert(`Ok so bruh why r u cheating? huh? score has been rejected because of ${cheatCheck.reason}. Stop cheating bro you aint tuff`);
-            this.changeState('RESULT',{ms:ms});
-            if(ms<AppState.stats.pb){
-                ConfettiEngine.fire();
-            }
-            this.recordScore(ms,false);
-    }
-},
+            this.changeState('PENALTY');
+            return;
+        }
+        this.changeState('RESULT',{ms:ms});
+        if(ms<AppState.stats.pb){
+            ConfettiEngine.fire();
+        }
+        this.recordScore(ms,false);
+    },
 recordScore:function(ms,isPenalty){
     const entry ={
         ms:ms,
@@ -464,7 +467,149 @@ recordScore:function(ms,isPenalty){
                 isPlayer: true
             });
         }
-        
+        //back again gd mroning
+        AppState.leaderboard.sort((a,b)=>a.ms-b.ms);
     }
-}
-}
+    StorageManager.save();
+    StatsEngine.calculate();
+ }
+};
+const StatsEngine = {
+    calculate:function(){
+        const h= AppState.user.history;
+        if(h.length===0)return;
+        const validTimes =h.filter(x=>!x.penalty).map(x=>x.ms);
+        if(validTimes.length>0){
+            AppState.stats.pb =Math.min(...validTimes);
+            const last5= validTimes.slice(-5);
+            AppState.stats.avg =Utils.math.mean(last5).toFixed(2);
+            AppState.stats.stdDev = Utils.math.stdDev(validTimes).toFixed(2);
+        }
+    }
+};
+const UIManager={
+    init:function(){
+        this.applyTheme(AppState.user.settings.theme);
+        this.updateUsername(AppState.user.name);
+        Utils.$('#inputUsername').value = AppState.user.name;
+        Utils.$('#selectTheme').value =AppState.user.settings.theme;
+        Utils.$('#checkAudio').checked =AppState.user.settings.audio;
+        StatsEngine.calculate();
+    },
+    applyTheme: function(themeName){
+        document.body.setAttribute('data-theme',themeName);
+        AppState.user.settings.theme = themeName;
+        if(ChartEngine.ctx)ChartEngine.draw();
+    },
+    updateUsername: function(name){
+        const displayName = name.trim()===''?'Guest':name;
+        AppState.user.name =displayName;
+        Utils.$('#displayUsername').textContent =displayName;
+        const pIndex = AppState.leaderboard.findIndex(x=>x.isPlayer);
+        if(pIndex>-1){
+            AppState.leaderboard[pIndex].user =displayName;
+        }
+    },
+    switchScreen:function(screenId){
+        Utils.$$('.screen').forEach(s=>s.classList.remove('active'));
+        Utils.$(`#${screenId}`).classList.add('active');
+        if(screenId==='screenDashboard'){
+            this.renderDashboard();
+        }else if(screenId==='screenArena'){
+            ArenaLogic.changeState('IDLE');
+        }
+    },
+    //uhh its morning and headache alrdy
+    renderDashboard:function(){
+        const h=AppState.user.history;
+        if(AppState.stats.pb!==Infinity){
+            Utils.$('#statPb').textContent =AppState.stats.pb;
+            const rank =AppState.leaderboard.findIndex(x=>x.isPlayer)+1;
+            Utils.$('#statPbRank').textContent = `Ranked as #${rank} globally`;
+        }
+        Utils.$('#statAvg').textContent = AppState.stats.avg||'--';
+        Utils.$('#statCount').textContent =h.length;
+        Utils.$('#statStdDev').textContent =AppState.stats.stdDev||'--';
+        ChartEngine.draw();
+        const listEl = Utils.$('#leaderboardList');
+        listEl.innerHTML = '';
+        const displayLimit =Math.min(100,AppState.leaderboard.length);
+        for(let i=0;i<displayLimit;i++){
+            const entry= AppState.leaderboard[i];
+            const isCurrentUser = entry.isPlayer;
+            const li =document.createElement('li');
+            li.className =`leaderboard-item rank-${i+1} ${isCurrentUser?'is-current-user':''}`;
+            li.innerHTML = `
+                <div class="rank">#${i+1}</div>
+                <div class="score-info">
+                   <div class="score-user">
+                   ${isCurrentUser?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>':''}
+                   ${entry.user}
+                   </div>
+                   <div class="score-value">${entry.ms.toFixed(1)} <span style="font-size:0.8rem;font-weight:normal;">ms</span></div>
+                </div>
+            `;
+            listEl.appendChild(li);
+        }
+    }
+};
+document.addEventListener('DOMContentLoaded',()=>{
+    console.log("System initing.............");
+    const hasSave= StorageManager.load();
+    if(!hasSave||AppState.leaderboard.length===0){
+        console.log("No Valid save found/ generating base line universe.......");
+        AppState.leaderboard = MockDataGen.generateSeedData();
+        StorageManager.save();
+    }
+    UIManager.init();
+    ArenaLogic.init();
+    ConfettiEngine.init();
+    //now i am gonna take a smal break      back again
+    Utils.$('#btnStartGame').addEventListener('click',()=>{
+        UIManager.switchScreen('screenArena');
+    });
+    Utils.$('#btnViewStats').addEventListener('click',()=>{
+        UIManager.switchScreen('screenDashboard');
+    });
+    Utils.$('#btnHome').addEventListener('click',()=>{ 
+           UIManager.switchScreen('screenMenu');
+});
+    Utils.$('#btnExitArena').addEventListener('click',()=>{
+        cancelAnimationFrame(AppState.arena.rafId);
+        UIManager.switchScreen('screenMenu');
+    });
+    Utils.$('#btnBackFromDash').addEventListener('click',()=>{
+        UIManager.switchScreen('screenMenu');
+    });
+    const modal =Utils.$('#modalSettings');
+    Utils.$('#btnSettings').addEventListener('click',()=>{
+        modal.classList.add('open');
+    });
+    Utils.$('#btnCloseSettings').addEventListener('click',()=>{
+        modal.classList.remove('open');
+    });
+    Utils.$('#displayUsername').addEventListener('click',()=>{
+        modal.classList.add('open');
+        Utils.$('#inputUsername').focus();
+    });
+    modal.addEventListener('click',(e)=>{
+        if(e.target===modal)modal.classList.remove('open');
+    });
+    Utils.$('#btnSaveSettings').addEventListener('click',()=>{
+         const newName= Utils.$('#inputUsername').value;
+         const newTheme =Utils.$('#selectTheme').value;
+         UIManager.updateUsername(newName);
+         UIManager.applyTheme(newTheme);
+         AppState.user.settings.audio =Utils.$('#checkAudio').checked;
+         StorageManager.save();
+         modal.classList.remove('open');
+    });
+    Utils.$('#btnWipeData').addEventListener('click',()=>{
+        if(confirm("sure? this will delete all your history and reset the leaderboard also it can be undo so be careful?")){
+            StorageManager.wipe();
+        }
+    });
+    window.addEventListener('keydown',ArenaLogic.handleKeyDown);
+
+});
+//finally doneeeeeeeeeeeee yay

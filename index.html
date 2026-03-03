@@ -29,7 +29,7 @@
             <div class="text-center mt-4">
                 <h1>Wanna test your reflexes?</h1>
                 <p>Click when the red thing you see turns green simple, isnt it?</p>
-                <div class="mt-3 flex-grow" style="justify-content: center;">
+                <div class="mt-3 flex-row" style="justify-content: center;">
                     <button id="btnStartGame" class="btn" style="font-size: 1.25rem; padding: 16px 32px;">Start the Game?</button>
                     <button class="btn btn-outline" id="btnViewStats">Dashboard & Leaderboard</button>
                 </div>
@@ -41,7 +41,7 @@
         <main id="screenArena" class="screen">
             <div class="arena-container state-idle" id="theArena">
                 <div class="arena-content">
-                    <div id="arenaIcon" style="margin-bottom: var(--spacing);">
+                    <div id="arenaIcon" style="margin-bottom: var(--spacing-md);">
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mouse-pointer"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path><path d="M13 13l6 6"></path></svg>
                     </div>
                     <h2 class="arena-title-mono" id="arenaTitle">Click to Begin!</h2>
@@ -130,7 +130,7 @@
                     Show Advance Stats
                 </label>
             </div>
-            <div class="mt-4 flex-grow" style="justify-content: space-between;">
+            <div class="mt-4 flex-row" style="justify-content: space-between;">
                 <button class="btn btn-outline" id="btnWipeData" style="color: var(--danger); border-color: var(--danger);">Wipe All Data</button>
                 <button class="btn" id="btnSaveSettings">Save Changes</button>
             </div>
