@@ -5,9 +5,9 @@
 <p>3. Customization: Reaction Tester also features customisaion where the user can customize their experience by changing their username, different types of themes and audio control.</p>
 
 <h2>Technologies Used:</h2>
-<p>HTML: Hyper Text Markup Language (HTML) is used to make the base structure of the web app.</p>
-<p>CSS: Cascading Style Sheets (CSS) is used to style the elemnts of the web page to make it attractive and interactive to the user.</p>
-<p>JS: Java Script (JS) is used to add the logic into the elements and make them functional to make the app work.</p>
+<p><strong>HTML</strong>: Hyper Text Markup Language (HTML) is used to make the base structure of the web app.</p>
+<p><strong>CSS</strong>: Cascading Style Sheets (CSS) is used to style the elemnts of the web page to make it attractive and interactive to the user.</p>
+<p><strong>JS</strong>: Java Script (JS) is used to add the logic into the elements and make them functional to make the app work.</p>
 
 <h2>How to run it?</h2>
 <p>There are 2 ways to run or play this web app. They are as follows:</p>
