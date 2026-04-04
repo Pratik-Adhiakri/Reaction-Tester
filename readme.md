@@ -1,7 +1,9 @@
 <h1>Reaction Tester</h1>
 <p>Reaction Tester is a web application made by using HTML, CSS and JS to make it compatible to run in the web. As the name stands, it is a web app where we can test our reflexes or rection speed. Here, I have used event listeners of js to input YOUR reaction time, web audio api to produce audio and local storage to store you usernames, stats and everything, Due to that Reaction tester features many more features that are listed below:</p>
 <p>1. Leaderboard: Reaction Tester has a leaderboar where there are 100 scores locally stored and it makes it more fun as it brings challenges to reach at the top or beat a specific score.</p>
+<img src="reaction time tester leaderboard.png">
 <p>2. Dashboard: Reaction Tester features a dashboard feature where your performance and scores are stored to make interactive charts, find standard deviation and average of your scores are calculated and visualized interactively. </p>
+<img src="reactiontimetester.png">
 <p>3. Customization: Reaction Tester also features customisaion where the user can customize their experience by changing their username, different types of themes and audio control.</p>
 <img src="reaction time tester.png">
 <h2>Technologies Used:</h2>
