@@ -3,7 +3,7 @@
 <p>1. Leaderboard: Reaction Tester has a leaderboar where there are 100 scores locally stored and it makes it more fun as it brings challenges to reach at the top or beat a specific score.</p>
 <p>2. Dashboard: Reaction Tester features a dashboard feature where your performance and scores are stored to make interactive charts, find standard deviation and average of your scores are calculated and visualized interactively. </p>
 <p>3. Customization: Reaction Tester also features customisaion where the user can customize their experience by changing their username, different types of themes and audio control.</p>
-
+<img src="reaction time tester.png">
 <h2>Technologies Used:</h2>
 <p><strong>HTML</strong>: Hyper Text Markup Language (HTML) is used to make the base structure of the web app.</p>
 <p><strong>CSS</strong>: Cascading Style Sheets (CSS) is used to style the elemnts of the web page to make it attractive and interactive to the user.</p>
